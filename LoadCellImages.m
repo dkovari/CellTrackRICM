@@ -54,6 +54,8 @@ if ~exist(filename,'file');
     error('Specified file: %s does not exist',filename);
 end
 
+[Dir,~] = fileparts(filename);
+
 %% Load File Info
 hDlg = msgbox({'Loading ND2 File Info','Please wait'},'Loading...');
 bfreader = bfGetReader(filename);
