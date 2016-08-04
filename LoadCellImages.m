@@ -35,6 +35,7 @@ fpath = mfilename('fullpath');
 pathstr = fileparts(fpath);
 oldpath = addpath(genpath(fullfile(pathstr,'ProcessCellImages_functions')));
 
+%% Select/open file
 persistent last_dir;
 if nargin<1
     %% Prompt User for data
@@ -120,6 +121,35 @@ while isnan(SeriesNum)||isnan(ChanNum)
     end
 end
 
+%% Prompt for Background
+answer = questdlg('Use a background image?');
+if ~strcmpi(answer,'yes')
+    USE_BG = false;
+else
+    USE_BG = true;
+    [BgName, BgPath] = uigetfile( ...
+                        {'*.tif;*.tiff','Image Files (*.tif, *.tiff)'},...
+                           'Select background image', Dir);
+    if BgName == 0
+        USE_BG = false;
+    else
+        [~,~,ext] = fileparts(BgName);
+        if strcmpi(ext,'.nd2')
+            disp('dan fix this');
+            USE_BG = false;
+        else
+            BG = double(imread(fullfile(BgPath,BgName)));
+            BG = wiener2(BG,[3,3]);
+            BG = BG - mean(BG(:));
+        end
+        [bgH,bgW,~] = size(BG);
+        if ~all([bgH,bgW]==[bfreader.getSizeY(),bfreader.getSizeX();])
+            USE_BG = false;
+            warning('Background is not correct size. Skipping.');
+        end
+    end
+end
+
 %% Load Images
 meta = bfreader.getMetadataStore();
 bfreader.setSeries(SeriesNum-1);
@@ -140,8 +170,12 @@ CellData.origstack = zeros(HEIGHT,WIDTH,nF);
 hWait = waitbar(0,'Loading Images');
 for f=1:nF
     idx = bfreader.getIndex(0,ChanNum-1,f-1)+1;
-    CellData.origstack(:,:,f) = double(bfGetPlane(bfreader,idx));
-    
+    Img = double(bfGetPlane(bfreader,idx));
+    if USE_BG
+        CellData.origstack(:,:,f) = (Img - mean(Img(:))) - BG;
+    else
+        CellData.origstack(:,:,f) = Img;
+    end
     %get timestamp
     dT = meta.getPlaneDeltaT(SeriesNum-1,idx-1);
     CellData.Time(f) = dT.value(ome.units.UNITS.S).doubleValue();
