@@ -8,7 +8,7 @@ This is a collection of tools for segmenting images of cells within MATLAB.
 4. After loading images, the image segmenter (ProcessCellData.m) is automatically started
 
 ## Processing Cell Images
-The image segmenter was originally designed to analyze cell footprint imaged under RICM.
+The image segmenter was originally designed to analyze cell footprints imaged under RICM.
 Image segmenting is done using 3 main parameters:
 - Ilow: Pixels below this value are included in the segmented image
   
