@@ -345,6 +345,7 @@ CellData.threshstack = false(size(CellData.origstack));
                 try
                 delete(hStackFig);
                 delete(hThreshFig);
+                delete(hPlotFig);
                 catch
                 end
             else
